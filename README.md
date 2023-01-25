@@ -1,3 +1,5 @@
+# Meal Planning Problem
+
 You are the head chef at a hotel. At this hotel, 4 meals a day are provided to guests: breakfast, lunch, dinner, and afternoon snack. Some meals can serve more than one role: for example a BLT sandwich can be breakfast, lunch, or an afternoon snack. Given a 'menu' of possible meals generate all valid permutations of meals that could be served to guests.
 
 **Complication:** guests demand variety in their diet. We can assign 'variety' a number based on the number of times in 1 day the same meal is repeated. For example, guests may only tolerate having the same meal twice in 2 days - this would be a value of 1.
