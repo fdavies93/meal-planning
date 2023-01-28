@@ -19,7 +19,7 @@ class Constraint:
         return f'[{self.period}, {self.max_repetitions}]'
 
 def generate_menu(meal_choices : int, meal_slots : int = 4):
-    return [ Meal(4) for m in range(meal_choices) ]
+    return [ Meal(meal_slots) for m in range(meal_choices) ]
 
 def get_possibilities(menu : list, slot_i):
     return list(filter(lambda m : m.slots[slot_i], menu))
@@ -72,8 +72,22 @@ def filter_permutations(permutations : list, hard_constraints : list = []):
             final_permutations.append(p)
     return final_permutations
 
-def rank_permutations(permutations : list, soft_constraints : list = []):
-    pass
+def score_permutations(permutations : list, soft_constraints : list = []):
+    failures = [ 0 for i in range(len(permutations)) ]
+    for i, p in enumerate(permutations):
+        for c in soft_constraints:
+            if not check_permutation_constraint(p, c):
+                failures[i] += 1
+    return failures
+
+def get_all_winners(ranked : list):
+    if not len(ranked) > 0:
+        return []
+    first_place = ranked[0][0]
+    i = 0
+    while ranked[i][0] == first_place:
+        i += 1
+    return ranked[:i]
 
 menu = generate_menu(5)
 for meal in menu:
@@ -88,6 +102,20 @@ hard_constraints = [
     Constraint(4,2) # no more than 2 identical meals in a single day
 ]
 
+soft_constraints = [
+    Constraint(4,1) # no more than one of the same meal in a single day
+]
+
 valid_permutations = filter_permutations(permutations, hard_constraints)
 print(f"Valid permutations: {len(valid_permutations)}")
-pprint(valid_permutations)
+scores = score_permutations(permutations, soft_constraints)
+print(scores)
+zipped = [(s, p) for s, p in zip(scores, valid_permutations)]
+# pprint(zipped)
+ranked = sorted(zipped, key=lambda pair : pair[0])
+# pprint(ranked)
+pprint(get_all_winners(ranked))    
+
+# ranking = [(s, p) for s, p in sorted(zip(scores, valid_permutations), key=lambda pair : pair[0])]
+# ranked_permutations = [p for _, p in sorted(zip(scores, valid_permutations), key=lambda pair : pair[0])]
+# pprint(ranking)
