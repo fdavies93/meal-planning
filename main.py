@@ -24,13 +24,13 @@ def generate_menu(meal_choices : int, meal_slots : int = 4):
 def get_possibilities(menu : list, slot_i):
     return list(filter(lambda m : m.slots[slot_i], menu))
 
-def generate_permutations(menu, slot_i = 0):
+def generate_permutations(menu, slot_i = 0, total_slots = 4):
 
-    possibilities = get_possibilities(menu, slot_i)
-    if slot_i == len(menu[0].slots) - 1:
+    possibilities = get_possibilities(menu, slot_i % len(menu[0].slots))
+    if slot_i == total_slots - 1: # menu slots shouldn't be controlling this; it should be independent
         return [ [p] for p in possibilities]
 
-    current_permutations = generate_permutations(menu, slot_i + 1)
+    current_permutations = generate_permutations(menu, slot_i + 1, total_slots)
 
     permutations = []
 
@@ -81,11 +81,11 @@ def score_permutations(permutations : list, soft_constraints : list = []):
     return failures
 
 def get_all_winners(ranked : list):
-    if not len(ranked) > 0:
+    if len(ranked) == 0:
         return []
     first_place = ranked[0][0]
     i = 0
-    while ranked[i][0] == first_place:
+    while i < len(ranked) and ranked[i][0] == first_place:
         i += 1
     return ranked[:i]
 
@@ -94,7 +94,11 @@ for meal in menu:
     print('-' * 20)
     print(meal)
     pprint(meal.slots)
-permutations = generate_permutations(menu)
+permutations = generate_permutations(menu, total_slots=8)
+
+if len(permutations) > 0:
+    pprint(permutations[0])
+
 print(f'Permutation number: {len(permutations)}')
 
 hard_constraints = [
@@ -106,15 +110,20 @@ soft_constraints = [
     Constraint(4,1) # no more than one of the same meal in a single day
 ]
 
+# check_permutation_constraint(permutations[0], hard_constraints[0])
+
 valid_permutations = filter_permutations(permutations, hard_constraints)
 print(f"Valid permutations: {len(valid_permutations)}")
-scores = score_permutations(permutations, soft_constraints)
-print(scores)
+scores = score_permutations(valid_permutations, soft_constraints)
+# print(scores)
 zipped = [(s, p) for s, p in zip(scores, valid_permutations)]
-# pprint(zipped)
+# # pprint(zipped)
 ranked = sorted(zipped, key=lambda pair : pair[0])
 # pprint(ranked)
-pprint(get_all_winners(ranked))    
+winners = get_all_winners(ranked)
+print(f"Best permutations: {len(winners)}")
+if len(winners) < 10:
+    pprint(winners)
 
 # ranking = [(s, p) for s, p in sorted(zip(scores, valid_permutations), key=lambda pair : pair[0])]
 # ranked_permutations = [p for _, p in sorted(zip(scores, valid_permutations), key=lambda pair : pair[0])]
